@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
+        <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/themes/cupertino/jquery-ui.css" type="text/css" media="all" />
+        <style>
+            body {font-family: sans-serif}
+            #map { width: 500px; height: 300px}
+        </style>
+    </head>
+    <body>
+        <h2>{{title}}</h2>
+        <div id="map"></div>
+    </body>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/jquery-ui.min.js"></script>
+    <script src="http://cdn.leafletjs.com/leaflet-0.4/leaflet.js"></script>
+    <script type="text/javascript">
+    $(function(){
+      var map = L.map('map').setView([41.879535, -87.624333], 5);
+
+      L.tileLayer('http://{s}.tile.cloudmade.com/96f9e3b01904446da17a780f9c16a304/997/256/{z}/{x}/{y}.png', {
+                  attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
+                  maxZoom: 18
+              }).addTo(map);
+      var marker;
+      var waypointsByID = {};
+
+      {% for waypoint in waypoints %}
+      waypointsByID["{{ waypoint.id }}"] = {
+      name: "{{waypoint.name}}",
+      lat: {{ waypoint.geometry.y }},
+      lng: {{ waypoint.geometry.x }}
+      };
+      {% endfor %}
+
+      var _waypoint = null;
+      var _waypointDiv = null;
+
+      var waypointOnClick = function(){
+      _waypointDiv = this;
+      _waypoint = waypointsByID[$(this).attr('id')];
+
+      if (!marker){
+          marker = L.marker([_waypoint.lat, _waypoint.lng],
+              {}).addTo(map);
+      }
+      else{
+          marker.setLatLng(new L.LatLng(_waypoint.lat, _waypoint.lng));
+      }
+      map.panTo([_waypoint.lat, _waypoint.lng]);
+      };
+      var waypointHoverIn = function(){
+      $(this).addClass('hover');
+      };
+      var waypointHoverOut = function(){
+      $(this).removeClass('hover');
+      };
+
+      var activateWaypoints = function(){
+      $('.waypoint')
+          .click(waypointOnClick)
+          .hover(waypointHoverIn, waypointHoverOut);
+      };
+      activateWaypoints();
+      });
+    </script>
+</html>
